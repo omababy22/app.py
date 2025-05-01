@@ -7,9 +7,13 @@ from langchain.chains import RetrievalQA
 
 def generate_response(uploaded_file, openai_api_key, query_text):
     if uploaded_file is not None:
-        documents = [uploaded_file.read().decode()]
+        raw_bytes = uploaded_file.read()
+        text = raw_bytes.decode('utf-8') if isinstance(raw_bytes, bytes) else raw_bytes
+        documents = [text]
+
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.create_documents(documents)
+
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         db = Chroma.from_documents(texts, embeddings)
         retriever = db.as_retriever()
